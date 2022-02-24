@@ -112,24 +112,30 @@
   // Produce a duplicate-free version of the array.
   _.uniq = function(array, isSorted, iterator) {
     var res = [];
-    var iterated = [];
+    // var iterated = [];
 
-    if (iterator) {
-      _.each(array, function(value) {
-        iterated.push(iterator(value));
-      });
-    }
+    // if (iterator) {
+    //   _.each(array, function(value) {
+    //     iterated.push(iterator(value));
+    //   });
+    // }
 
     for (var i = 0; i < array.length; i++) {
       // define test values
-      var testValue = iterator ? iterated[i] : array[i];
-      var testArray = iterator ? iterated : array;
+      // var testValue = iterator ? iterated[i] : array[i];
+      // var testArray = iterator ? iterated : array;
 
-      if (testArray.indexOf(testValue) === i) {
+      if (i === 0 && array[i]) {
         res.push(array[i]);
+      } else if(iterator) {
+        if (i === 1 && (iterator(array[i]) || res.indexOf(array[i]) === -1)) {
+          res.push(array[i]);
+        }
+      }else if (!(array[i] in res)) {
+         res.push(array[i]);
       }
-
     }
+
     return res;
   };
 
@@ -188,18 +194,25 @@
   //     return total + number * number;
   //   }); // should be 5, regardless of the iterator function passed in
   //          No accumulator is given so the first element is used.
+
+  // I - array or object, iterator function, accumulator (optional start)
+  // O - single value (accumulator result)
+
+  // Call iterator(accumulator, item) for each item in input object/array, update accumulator as result of each call
+
+
   _.reduce = function(collection, iterator, accumulator) {
-    var accumulator = accumulator || collection[0];
+    // starting point
+    if(accumulator === undefined) {
+      accumulator = collection[0];
+      collection = collection.slice(1, collection.length)
+    }
 
     _.each(collection, function(item) {
-
-      accumulator += iterator(item);
+      accumulator = iterator(accumulator, item);
     });
 
-
     return accumulator;
-
-
   };
 
   // Determine if the array or object contains a given value (using `===`).
@@ -218,6 +231,13 @@
   // Determine whether all of the elements match a truth test.
   _.every = function(collection, iterator) {
     // TIP: Try re-using reduce() here.
+    return _.reduce(collection, function(acc, cur) {
+      if (iterator === undefined) {
+        return cur;
+      } else {
+        return !!iterator(cur) === !!acc;
+      }
+    }, true)
   };
 
   // Determine whether any of the elements pass a truth test. If no iterator is
